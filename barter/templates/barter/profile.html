@@ -1,0 +1,374 @@
+{% extends "barter/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    <p class="pageid">{{ profiler.username }}</p>
+
+    <div class="container-fluid">
+        
+        <div class="p-5 row">
+
+            <!-- name of the user with the yellow circle -->
+            <div class="col-sm-12 col-lg-4 text-center flex-profile-sup">
+                <div class="bg-warning flex-profile" >
+                    <h1 class="text-white">{{ profiler.username }}</h1>
+                </div>
+            </div>
+            
+            <!-- middle column of intro with the user's bio -->
+            <div class="col-sm-12 col-lg-5 mt-3 px-5 pb-5">
+                <h2>About Me:</h2>
+
+                {% if user == profiler %}
+                    {% if profiler.bio %}
+                        <p class="text-right edit-bio-pencil"><i class="fas fa-pencil-alt text-warning edit-bio-icon"></i></p>
+                        <h5 class="bio-og">{{ profiler.bio }}</h5>
+                    {% else %}
+                        <p class="pt-2 text-right edit-bio-pencil"><i class="fas fa-pencil-alt text-warning edit-bio-icon"></i></p>
+                        <p class="small bio-og">[ You haven't written a bio yet. Write one! ]</p>
+                    {% endif %}
+
+                    <!-- div to edit the bio -->
+                    <div id="edit-bio">
+                        <p id="edit-bio-close" class="text-right text-warning"><i id="close-x-bio" class="fas fa-window-close fa-lg close-x"></i></p>
+                        <form id="edit-bio-form">
+                            <textarea class="form-control border-warning" id="edit-bio-text" maxlength="300"></textarea>
+                            <p class="text-right"><button type="submit" class="btn btn-outline-warning mt-2">Save</button></p>
+                        </form>
+                    </div>
+
+                {% else %}
+                    {% if profiler.bio %}
+                        <h5 class="pt-2">{{ profiler.bio }}</h5>
+                    {% else %}
+                        <p class="pt-2 small">[ {{ profiler.username }} hasn't written a bio yet ]</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- right column with the user's points (if seeing their own profile) and the rating-->
+            <div class="col-sm-12 col-lg-3 text-center ratings-col">
+                {% if user == profiler %}
+                    <div class="border-bottom border-warning pb-2 mb-4">
+                        <hr>
+                        <h3 class="font-weight-bold"><i class="fas fa-money-bill"></i> {{ profiler.points }} points</h3>
+                    </div>
+                {% endif %}
+
+                <div>
+                    {% if ratings_avg.rating__avg <= 5 %}
+                        <p><i class="fas fa-star-half-alt text-warning star"></i></p>
+                    {% elif ratings_avg.rating__avg > 5 %}
+                        <p><i class="fas fa-star text-warning star"></i></p>
+                    {% else %}
+                    <p><i class="far fa-star text-warning star"></i></p>
+                    {% endif %}
+
+                    {% if not ratings %}
+                        <p class="small">No votes yet</p>
+                    {% else %}
+                        <p class="ratings-avg">{{ ratings_avg.rating__avg }} / 10</p>
+                        {% if ratings.all.count == 1 %}
+                            <p class="small">({{ ratings.all.count }} vote)</p>
+                        {% else %}
+                            <p class="small">({{ ratings.all.count }} votes)</p>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if user != profiler %}
+                        {% if buyer %}
+                            {% if user in ratings_list  %}
+                                <button id="vote" class="btn btn-outline-warning btn-sm mt-4">Update your vote</button>
+                            {% else %}
+                                <button id="vote" class="btn btn-outline-warning btn-sm mt-4">Vote</button>
+                            {% endif %}
+                            <!-- voting div -->
+                            <div id="voting-div">
+                                <form id="voting-form">
+                                    <select id="voting-select" class="custom-select mb-2">
+                                        <option selected>Vote</option>
+                                        {% for i in range %}
+                                            <option value="{{ i }}">{{ i }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-outline-warning btn-sm">Submit</button>
+                                  </form>
+                            </div>
+                        {% else %}
+                            <button class="btn btn-outline-secondary btn-sm mt-4 disabled vote-disabled">Vote</button>
+                            <p class="small pt-2">Voting is only available for those who have bought a service from the user.</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- the user's watchlist and purchases - if seeing their own profile -->
+        {% if user == profiler %}
+            <div class="px-5 row">
+                <div class="col-sm-12 col-lg-6 px-4 py-4">
+                    <h2 class="mb-3"><i class="fas fa-check-circle"></i> My List:</h2>
+
+                    {% for element in profiler_watchlist %}
+                        <div class="border-bottom py-2 px-5">
+                            {{ element.name }} by <a href="{% url 'profile' element.user_id %}">{{ element.user_id }}</a>
+                        </div>
+                    {% empty %}
+                        <p>You don't have any services on your list.</p>
+                    {% endfor %}
+                </div>
+
+                <div class="col-sm-12 col-lg-6 px-4 py-4">
+                    <h2 class="mb-3"><i class="fas fa-cart-arrow-down"></i> My Purchases:</h2>
+
+                    {% for element in profiler_purchases %}
+                        <div class="border-bottom py-2 px-5">
+                            {{ element.service_id.name }} by <a href="{% url 'profile' element.service_id.user_id %}">{{ element.service_id.user_id }}</a>
+                        </div>
+                    {% empty %}
+                        <p>You haven't bought any services yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- list of the user's services -->
+        <div class="my-5 px-5 pt-3">
+            <h2 class="mb-3"><i class="fas fa-store"></i> Services:</h2>
+
+            <div class="border-bottom border-top font-weight-bold py-2 text-center row" id="servicestable">
+                <div class="col-sm-2 text-left">
+                    Name
+                </div>
+                <div class="col-sm-4 text-left">
+                    Description
+                </div>
+                <div class="col-sm-1">
+                    Price
+                </div>
+                <div class="col-sm-1">
+                    Slots
+                </div>
+                <div class="col-sm-1">
+                    Category
+                </div>
+                <div class="col-sm-1">
+                    Status
+                </div>
+                <div class="col-sm-2">
+                    
+                </div>
+            </div>
+
+            {% for service in services %}
+            <div class="border-bottom py-2 text-center row">
+                <div class="col-sm-2 text-left">
+                    <b>{{ service.name }}</b>
+                </div>
+                <div class="col-sm-4 text-left">
+                    {{ service.description }}
+                </div>
+                <div class="col-sm-1">
+                    {{ service.price }} points
+                </div>
+                <div class="col-sm-1">
+                    {{ service.slots }} slot(s)
+                </div>
+                <div class="col-sm-1">
+                    {{ service.category }}
+                </div>
+                <div class="col-sm-1">
+                    {% if service.status %}
+                        <i class="fas fa-circle fa-xs text-success"></i> Active
+                    {% else %}
+                        <i class="fas fa-circle fa-xs text-danger"></i> Inactive
+                    {% endif %}
+                </div>
+                <div class="col-sm-2">
+                    {% if user == profiler %}
+                        {% if service.status %}
+                            <button data-serviceid="{{ service.id }}" class="btn btn-outline-warning btn-sm edit-service-button"><i class="fas fa-pencil-alt"></i> Edit</button>
+                            <button data-serviceid="{{ service.id }}" class="btn btn-outline-warning btn-sm closeservice"><i class="fas fa-lock"></i> Close</button>
+                        {% else %}
+                            <button data-serviceid="{{ service.id }}" class="btn btn-outline-warning btn-sm edit-service-button"><i class="fas fa-pencil-alt"></i> Edit</button>
+                            <button data-serviceid="{{ service.id }}" class="btn btn-outline-warning btn-sm openservice"><i class="fas fa-lock-open"></i> Reactivate</button>
+                        {% endif %}
+                    {% else %}
+                        {% if user in service.watchedby.all %}
+                            <button data-serviceid="{{ service.id }}" class="btn btn-outline-warning btn-sm list-remove"><i class="fas fa-check-circle"></i> My list</button>
+                        {% else %}
+                            <button data-serviceid="{{ service.id }}" class="btn btn-outline-warning btn-sm list-add"><i class="fas fa-plus-circle"></i> My List</button>
+                        {% endif %}
+                        
+                        {% if service.id in purchases_list %}
+                            <button class="btn btn-outline-secondary btn-sm disabled buy-disabled"><i class="fas fa-check-circle"></i> Bought!</button>
+                        {% else %}
+                            <button data-serviceid="{{ service.id }}" class="btn btn-outline-warning btn-sm buy-now"><i class="fas fa-cart-arrow-down"></i> Buy</button>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Div to edit a service -->
+            <div id="edit-service-{{ service.id }}" class="pt-3 mb-3 pb-3 border-bottom border-warning edit-service-div">
+                <p id="edit-service-close-{{ service.id }}" class="text-right text-warning edit-service-class"><i id="close-x-{{ service.id }}" class="fas fa-window-close fa-lg close-x"></i></p>
+                <form id="edit-service-form-{{ service.id }}">
+                    <div class="form-group">
+                        <label for="edit-name-{{ service.id }}">Name:</label>
+                        <input type="text" class="form-control border-warning" id="edit-name-{{ service.id }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-description-{{ service.id }}">Description:</label>
+                        <textarea class="form-control border-warning" id="edit-description-{{ service.id }}" maxlength="300"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="edit-price-{{ service.id }}">Price:</label>
+                                <input type="number" class="form-control border-warning" id="edit-price-{{ service.id }}" min="0">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="edit-slots-{{ service.id }}">Slots:</label>
+                                <input type="number" class="form-control border-warning" id="edit-slots-{{ service.id }}" min="1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-category-{{ service.id }}">Category:</label>
+                        <select class="form-control border-warning custom-select" id="edit-category-{{ service.id }}">
+                            {% for category in categories %}
+                                <option value="{{ category }}" class="option-category-{{ service.id }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <p class="text-center"><button type="submit" class="btn btn-outline-warning mt-2">Save</button></p>
+                </form>
+            </div>
+            {% empty %}
+                <p>You don't have any services yet. Add some!</p>
+            {% endfor %}
+
+            {% if user == profiler %}
+                <div class="pt-3 text-center" id="button-add-service">
+                    <button class="btn btn-outline-warning"><i class="fas fa-edit"></i> Add a Service</button>
+                </div>
+                <!-- div to create a new service --> 
+                <div id="new-service" class="pt-3 mb-3 pb-3 border-bottom border-warning">
+                    <p id="new-service-close" class="text-right text-warning new-service-class"><i id="close-x-new-service" class="fas fa-window-close fa-lg close-x"></i></p>
+                    <h3 class="text-center">Add a New Service:</h3>
+                    <form id="new-service-form">
+                        <div class="form-group">
+                            <label for="new-name">Name:</label>
+                            <input type="text" class="form-control border-warning" id="new-name">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-description">Description:</label>
+                            <textarea class="form-control border-warning" id="new-description" maxlength="300"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="new-price">Price:</label>
+                                    <input type="number" class="form-control border-warning" id="new-price" min="0">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="new-slots">Slots:</label>
+                                    <input type="number" class="form-control border-warning" id="new-slots" min="1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-category">Category:</label>
+                            <select class="form-control border-warning custom-select" id="new-category">
+                                {% for category in categories %}
+                                    <option value="{{ category }}" class="new-category-option">{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+    
+                        <p class="text-center"><button type="submit" class="btn btn-outline-warning mt-2">Save</button></p>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- div of the user's latest sales (if seeing their own profile) -->
+        {% if user == profiler %}
+        <div class="my-5 px-5 pt-3">
+            <h2 class="mb-3"><i class="fas fa-award"></i> Latest Sales:</h2>
+            {% for selling in profiler_sellings %}
+                <div class="row border-bottom py-2">
+                    <div class="col-sm-3 font-weight-bold">
+                        {{ selling.service_id.name }}
+                    </div>
+                    <div class="col-sm-3">
+                        boutght by <a href="{% url 'profile' selling.user_id %}">{{ selling.user_id }}</a>
+                    </div>
+                    <div class="col-sm-3">
+                        for {{ selling.amountpaid }} points
+                    </div>
+                    <div class="col-sm-3">
+                        on {{ selling.timestamp }}
+                    </div>
+                </div>
+            {% empty %}
+                <p>You haven't sold any services yet :(</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- comments div (with replies, if any) -->
+        <div class="my-5 px-5 pt-4">
+            <h2 class="mb-3"><i class="fas fa-comment"></i> Comments:</h2>
+
+            {% for comment in comments %}
+                <div class="card border-warning px-3 pt-3 mb-2">
+                    {% if user == profiler %}
+                        <p class="text-right small text-warning reply-p"><span data-commentid="{{ comment.id }}" class="reply-button"><i class="fas fa-reply"></i> Reply</span></p>
+                    {% endif %}
+                    <p>{{ comment.comment }}</p>
+                    <p class="small font-italic">-- {{ comment.user_id }}, {{ comment.timestamp }}.</p>
+
+                    {% for reply in replies %}
+                        {% if reply.comment_id.id == comment.id %}
+                            <div class="card bg-warning text-white p-3 text-right small">
+                                <p class="small font-italic">On {{ reply.timestamp }}:</p>
+                                <p>{{ reply.reply }}</p>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <!-- div for the profiler to reply to a comment-->
+                    <div id="reply-{{ comment.id }}" class="mx-3 replies-divs">
+                        <p id="reply-close-{{ comment.id }}" class="text-right text-warning"><i id="close-x-reply-{{ comment.id }}" class="fas fa-window-close fa-lg close-x"></i></p>
+                        <form id="reply-form-{{ comment.id }}">
+                            <textarea class="form-control border-warning" id="reply-text-{{ comment.id }}" maxlength="300"></textarea>
+                            <p class="text-right"><button type="submit" class="btn btn-outline-warning mt-2">Reply</button></p>
+                        </form>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No comments yet.</p>
+            {% endfor %}
+
+            <div class="pt-4">
+                <form id="newcomment">
+                    <textarea type="text" id="comment" class="form-control" placeholder="Post a comment" maxlength="300"></textarea>
+                    <p class="text-right pt-2"><button type="submit" class="btn btn-outline-warning">Post</button></p>
+                </form>
+            </div>
+        </div>
+
+    </div><!-- end of container-fluid -->
+
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'barter/barter.js' %}"></script>
+{% endblock %}

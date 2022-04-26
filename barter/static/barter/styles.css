@@ -1,0 +1,189 @@
+:root {
+    --colorwarning: #ffc107;
+    --colorsecondary: #6c757d;
+}
+
+body {
+    font-family: 'Josefin Sans', sans-serif;
+}
+
+.pageid, #edit-bio, .edit-service-div, #new-service, #voting-div, .replies-divs {
+    display: none;
+}
+
+.logonav {
+    width: 50%;
+}
+
+a {
+    color: var(--colorwarning);
+}
+
+a:hover {
+    color: var(--colorwarning);
+    text-decoration: none;
+    opacity: 0.7;
+}
+
+.nav-link {
+    color: white !important;
+}
+
+.nav-link:hover {
+    opacity: 0.7 !important;
+}
+
+hr {
+    background-color: var(--colorwarning) !important;
+}
+
+.categorydiv {
+    display: block;
+}
+
+button:hover, .manage:hover {
+    color: white !important;
+}
+
+.login-register {
+    color: white !important;
+}
+
+.login-register:hover {
+    background-color: white !important;
+    color: var(--colorwarning) !important;
+}
+
+select {
+    border-color: var(--colorwarning) !important;
+}
+
+select:focus {
+    border-color: var(--colorwarning) !important;
+}
+
+.smallest {
+    font-size: 56%;
+}
+
+.buy-disabled:hover, .vote-disabled:hover {
+    cursor: not-allowed;
+    color: var(--colorsecondary) !important;
+}
+
+footer {
+    height: 100px;
+    color: rgba(0,0,0,.5);
+}
+
+.loginout {
+    /* Center form controls */
+    display: inline-block;
+
+    /* Override Bootstrap's 100% width for form controls */
+    width: auto;
+}
+
+
+/* On screens that are 992px wide or less, make the elements display in a column */
+@media screen and (max-width: 992px) {
+    .flex-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+}
+  
+/* On screens that are 600px wide or less, make the column be a row */
+@media screen and (max-width: 600px) {
+    .flex-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        border-bottom: 1px solid var(--colorwarning);
+    }
+}
+
+.flex-profile-sup {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-profile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    width: 15rem;
+    height: 15rem;
+}
+
+.star {
+    font-size: 3.5em;
+}
+
+.ratings-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.ratings-avg {
+    font-size: 1.75rem;
+    margin-top: 0.3rem;
+    margin-bottom: 0.1rem;
+}
+
+#comment::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: var(--colorwarning);
+    opacity: 1; /* Firefox */
+}
+  
+#comment:-ms-input-placeholder { /* Internet Explorer 10-11 */
+color: var(--colorwarning);
+}
+  
+#comment::-ms-input-placeholder { /* Microsoft Edge */
+color: var(--colorwarning);
+}
+
+textarea, input {
+    color: var(--colorsecondary) !important;
+}
+
+.form-control:focus {
+    border-color: var(--colorwarning);
+    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.075) inset, 0px 0px 6px rgba(255, 193, 7, 1);
+}
+
+#edit-bio-close, .edit-bio-pencil, .edit-service-class, #reply-p {
+    margin-bottom: 0px !important;
+}
+
+.close-x:hover, .edit-bio-pencil > i:hover, .reply-button:hover {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+#index-bg {
+    background: url('logo-round-nobg.png') right no-repeat;
+    background-size: 27rem;
+}
+
+@media screen and (max-width: 600px) {
+    /* On screens that are 600px wide or less, make the adapt the image on the background of the index */
+    #index-bg {
+        background: url('logo-round-nobg.png') center top no-repeat;
+        background-size: 20rem;
+    }
+
+    /* hide the header of the services 'table' on small screens */
+    #servicestable {
+        display: none;
+    }
+}

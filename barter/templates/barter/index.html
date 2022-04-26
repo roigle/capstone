@@ -1,0 +1,30 @@
+{% extends "barter/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    <div class="container mt-5 py-5" id="index-bg">
+
+        <h1>Welcome to Barter!</h1>
+        
+        <h3 class="py-4">
+            A place where you can find help with tons of things<br>
+            and where you can also help others with things you're good at!
+        </h3>
+
+        <p>
+            Register and you will automatically be granted <b>100 points</b><br>
+            so you can start enjoying the benefits of the community right away
+        </p>
+
+        <p><a href="{% url 'register' %}" class="btn btn-warning btn-lg login-register">Register</a></p>
+
+        <p class="pt-4">Already have an account? <a href="{% url 'login' %}" class="btn btn-warning btn-sm login-register">Login</a></p>
+
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'barter/barter.js' %}"></script>
+{% endblock %}
